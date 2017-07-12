@@ -1,9 +1,9 @@
 /**
  * See: https://github.com/moszeed/es6-promise-debounce/blob/master/src/es6-promise-debounce.js
  */
+var timeout;
 function debounce(func, wait, immediate) {
 
-    var timeout;
     return function() {
 
         var context = this, args = arguments;

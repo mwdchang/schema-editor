@@ -1,19 +1,14 @@
 class Validator {
 
   constructor() {
-    this.handle = null;
   }
 
-  requestValidation(txt) {
-    if (this.handle) {
-      clearTimeout(this.handle);
-    }
-    setTimeout(()=> {
-    }, 2500);
+  validate(txt) {
+    return new Promise( (resolve, reject) => {
+      let blah = txt;
+      resolve(blah.replace(/var/g, 'let'));
+    });
   }
-
-
-
 
 
 }

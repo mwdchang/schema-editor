@@ -6,6 +6,7 @@
 		<script src="./node_modules/ace-builds/src-min/ace.js"></script>
 	   -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js"></script>
+		<script src="debouncer.js"></script>
 		<script src="validator.js"></script>
 		<style>
 			html {
@@ -43,7 +44,7 @@ function foo(items) {
 	  		</div>
 			</div>
 			<div style="position:relative; width:50%; height:250px">
-			    <div id="output"> hello
+			    <div id="output">
 					</div>
 			</div>
 		</div>
@@ -58,9 +59,22 @@ function foo(items) {
 			editor.setTheme("ace/theme/solarized_dark");
 			editor.getSession().setMode("ace/mode/javascript");
 			editor.resize();
-			editor.getSession().on('change', ()=> {
+
+			let test = () => {
+				document.getElementById('output').innerHTML = 'validating...';
 				let txt = editor.getSession().getValue();
-				console.log(txt);
-			});
+
+				let promiseFn = debounce( ()=> {
+					return validator.validate(txt);
+				}, 2000);
+
+				promiseFn().then( d => {
+					console.log('promise', d);
+					let txt = d.replace(/\n/g, '<br>').replace(/\s/, '&nbsp;');
+					document.getElementById('output').innerHTML = txt;
+				});
+			};
+			editor.getSession().on('change', test);
+			test();
 	</script>
 </html>
