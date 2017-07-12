@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Schema Editor</title>
+		<!--
+		<script src="./node_modules/ace-builds/src-min/ace.js"></script>
+	   -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js"></script>
+		<script src="validator.js"></script>
+		<style>
+			html {
+				height: 100%
+			}
+			body {
+				margin: 0.5rem;
+				font-family: Tahoma;
+				height: 100%;
+			}
+			.row {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+			}
+
+	    #input, #output {
+				top: 0.5rem;
+				bottom: 0.5rem;
+				right: 0.5rem;
+				left: 0.5rem;
+				position: absolute;
+				box-sizing: border-box;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="row">
+			<div style="position:relative; width:50%; height:250px">
+				  <div id="input">
+function foo(items) {
+	var x = "All this is syntax highlighted";
+	return x;
+}
+	  		</div>
+			</div>
+			<div style="position:relative; width:50%; height:250px">
+			    <div id="output"> hello
+					</div>
+			</div>
+		</div>
+		<div class="row">
+			blah blah blah
+		</div>
+
+	</body>
+	<script>
+	    let validator = new Validator();
+		  let editor = ace.edit("input");
+			editor.setTheme("ace/theme/solarized_dark");
+			editor.getSession().setMode("ace/mode/javascript");
+			editor.resize();
+			editor.getSession().on('change', ()=> {
+				let txt = editor.getSession().getValue();
+				console.log(txt);
+			});
+	</script>
+</html>
