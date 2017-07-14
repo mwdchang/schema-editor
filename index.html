@@ -2,63 +2,60 @@
 <html>
 	<head>
 		<title>Schema Editor</title>
-		<!--
-		<script src="./node_modules/ace-builds/src-min/ace.js"></script>
-	   -->
+		<link href="styles.css" rel="stylesheet" type="text/css">
+		<link href="solarized.css" rel="stylesheet" type="text/css">
+		<!--<script src="./node_modules/ace-builds/src-min/ace.js"></script>-->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js"></script>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+
 		<script src="debouncer.js"></script>
 		<script src="validator.js"></script>
-		<style>
-			html {
-				height: 100%
-			}
-			body {
-				margin: 0.5rem;
-				font-family: Tahoma;
-				height: 100%;
-			}
-			.row {
-				display: flex;
-				flex-direction: row;
-				justify-content: space-between;
-			}
-
-	    #input, #output {
-				top: 0.5rem;
-				bottom: 0.5rem;
-				right: 0.5rem;
-				left: 0.5rem;
-				position: absolute;
-				box-sizing: border-box;
-			}
-		</style>
 	</head>
 	<body>
 		<div class="row">
-			<div style="position:relative; width:50%; height:250px">
-				  <div id="input">
-function foo(items) {
-	var x = "All this is syntax highlighted";
-	return x;
-}
-	  		</div>
+			<div style="position:relative; width:50%; height:350px">
+				<div id="input">
+        </div>
 			</div>
-			<div style="position:relative; width:50%; height:250px">
-			    <div id="output">
-					</div>
+			<div style="position:relative; width:50%; height:350px">
+			    <pre id="output">
+					</pre>
 			</div>
 		</div>
+		<br>
+
 		<div class="row">
-			blah blah blah
+			<div id="errors">
+			</div>
 		</div>
 
 	</body>
 	<script>
-	    let validator = new Validator();
-		  let editor = ace.edit("input");
-			editor.setTheme("ace/theme/solarized_dark");
-			editor.getSession().setMode("ace/mode/javascript");
-			editor.resize();
+	    let validator = new Validator()
+		  let editor = ace.edit("input")
+			editor.setTheme("ace/theme/solarized_dark")
+			// editor.getSession().setMode("ace/mode/javascript");
+			editor.resize()
+
+
+
+			let displayErrors = (errors) => {
+				d3.select('#errors').select('*').remove()
+				let container = d3.select('#errors').append('ul');
+
+				let lists = container.selectAll('li')
+				  .data(errors)
+					.enter()
+					.append('li')
+					//.text( d => d.txt)
+					.on('click', (d) => {
+						editor.scrollToLine(d.line, true, true, ()=>{})
+						editor.gotoLine(d.line, 0);
+					});
+
+				lists.append('span').text(d => d.txt);
+				lists.append('span').style('font-style', 'italic').text(d => d.line);
+			}
 
 			let test = () => {
 				document.getElementById('output').innerHTML = 'validating...';
@@ -69,12 +66,19 @@ function foo(items) {
 				}, 2000);
 
 				promiseFn().then( d => {
-					console.log('promise', d);
-					let txt = d.replace(/\n/g, '<br>').replace(/\s/, '&nbsp;');
-					document.getElementById('output').innerHTML = txt;
+					// console.log('promise', d);
+					document.getElementById('output').innerHTML = d.output;
+					if (d.errors) {
+					  displayErrors(d.errors)
+					}
 				});
 			};
+
 			editor.getSession().on('change', test);
-			test();
+
+			d3.text('test.txt', (d) => {
+			  editor.setValue(d, -1)
+			  test()
+			})
 	</script>
 </html>
