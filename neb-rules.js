@@ -12,14 +12,18 @@ define("NebRules", [], function(require, exports, module) {
 
      const controlled = [
        'study',
-       'demo',
        'classes',
        'models'
      ];
 
+     const controlled2 = [
+       'demo',
+     ];
+
 
      const keywordMapper = this.createKeywordMapper({
-       'neb_controlled': controlled.join('|')
+       'neb_controlled': controlled.join('|'),
+       'neb_controlled2': controlled2.join('|')
      }, 'identifier');
 
 
