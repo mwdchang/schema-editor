@@ -1,0 +1,17 @@
+/* All prefixed with ace */
+
+.ace_neb_comment {
+  color: #3A4;
+}
+
+.ace_neb_controlled {
+  color: #E72;
+}
+
+.ace_neb_enum {
+  color: #F88;
+}
+
+.ace_frusciante {
+  color: #F00;
+}

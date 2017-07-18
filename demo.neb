@@ -1,0 +1,451 @@
+vvv
+ayyao
+	models
+
+		demo
+			classes
+
+				# ===========================================================================
+				study
+					plural	y -> ies
+
+					fields
+
+						_id			id
+						$legacy_pedcbio
+
+						cbio_cancer_type	enum:|acc|acyc|all|aml|blca|brca|ccrcc|ccsk|cesc|chol|chrcc|coadread|cranio|difg|dipg|dlbcl|epm|es|esca|escc|ganglio|gbm|glioma|hcc|hgsoc|hnsc|luad|lusc|mbl|mixed|mm|mnet|mpnst|nbl|npc|paad|pptp|prad|prcc|scco|sclc|skcm|soft_tissue|stad|thpa|ucec|ucs|wt|
+
+						rdfs:label		# = NAME;        eg "Adrenocortical Carcinoma (TCGA, Provisional)"
+						rdfs:comment	# = DESCRIPTION; eg "TCGA Adrenocortical Carcinoma; raw data at the <A HREF="https://tcga-data.nci.nih.gov/">NCI</A>."; migration: URL as rdfs:seeAlso
+						
+						short_name		# eg "ACC (TCGA)"; migration: chRCC (TCGA) is repeated...; TODO: find an 'rdfs:short_name'-like...
+
+						group
+							type	enum:|PUBLIC|CBTTC|MARIS_LAB|SU2C|
+							cardi	seq{1,-}
+
+						#> pmid <# http://purl.obolibrary.org/obo/OBI_0001617		cardi=opt # eg "22817889"; see http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0001617 (PubMed ID)
+						citation	cardi=opt # can be homogenized too (split in several fields)
+
+						public					boolean
+						normals_tissue_mapping	boolean # TODO: discard? or as visual meta?
+
+						# discarded
+						#	link_to_harvest (boolean): will be implicit
+
+						genetic_profile
+							type	ref:genetic_profile # TODO: ask karthik (also appears under mutation)
+							cardi	seq
+						
+						case_set
+							type	ref:case_set
+							cardi	seq # TODO: separate case_set_all	ref:case_set (since always there)
+
+						patient
+							type	ref:patient
+							cardi	seq{1,10000}
+
+				# ===========================================================================
+				genetic_profile
+					fields
+						_id			id
+						$legacy_pedcbio
+
+						rdfs:label
+						rdfs:comment
+
+						normals_mapping		enum:|-1|1|2| # TODO: keep?
+						alteration_type		enum:|CNA|FUSION|METHYLATION|MRNA|MUTATION_EXTENDED|PROTEIN_ARRAY| # see full list in org.mskcc.cbio.portal.model.GeneticAlterationType
+						profile_type
+							type	enum:|CONTINUOUS|DATATYPE|DISCRETE|FUSION|LOG-VALUE|MAF|SEG|Z-SCORE|
+							cardi	opt # TODO: null strategy
+
+						$visual_show_in_analysis_tab	boolean # TODO: keep?
+						
+						sample
+							type	ref:sample
+							cardi	seq
+
+				# ---------------------------------------------------------------------------
+				case_set
+					fields
+						_id			id
+						
+						$legacy_pedcbio
+
+						category	enum:|other|all_cases_in_study|all_cases_with_cna_data|all_cases_with_log2_cna_data|all_cases_with_methylation_data|all_cases_with_microrna_data|all_cases_with_mrna_array_data|all_cases_with_mrna_rnaseq_data|all_cases_with_mutation_and_cna_and_mrna_data|all_cases_with_mutation_and_cna_data|all_cases_with_mutation_data|all_cases_with_rppa_data|
+
+						rdfs:label
+						rdfs:comment
+
+						sample
+							type	ref:sample
+							cardi	seq
+
+				# ===========================================================================
+				patient
+
+					fields
+
+						_id			id
+						$legacy_pedcbio
+						
+						harvest_nautilus_subject
+							type	ref:nautilus_subject
+							cardi	opt # TODO: can there be more than one?
+						
+						sample
+							type	ref:sample
+							cardi	seq{1,1000}
+						
+#						attribute
+#							type	tuple:(ref:sample_clinical_attribute;text)
+#							cardi	seq:uniq(_._1)
+
+				# ---------------------------------------------------------------------------
+				sample
+
+					fields
+
+						_id			id
+
+						$legacy_pedcbio
+						sample_type						enum:|Metastatic|Primary Blood Tumor|Primary Solid Tumor|Recurrent Solid Tumor|
+
+						# discarded:
+						#	type_of_cancer_id --> actually available on the study (validate)
+						#	cancer_study_id --> validate
+						
+#						attribute
+#							type	tuple:(ref:sample_clinical_attribute;text)
+#							cardi	seq:uniq(_._1)
+#							#combo	map:(ref:clinical_attribute,text)
+
+				# ===========================================================================
+				patient_clinical_attribute
+
+					fields
+						_id		id # migration: one of them is empty, but defaulted to "COMMENT[TARGET DATA LEVEL]"
+						$legacy_pedcbio
+						
+						rdfs:label							# formerly: display_name
+						rdfs:comment			cardi=opt	# only if different than display name; formerly "description"
+
+						is_number				boolean # TODO: as owl union type: real or text
+
+						# discarded:
+						# 	priority: seems to always be '1'
+						#	cancer_study_id (validate)
+
+				# ---------------------------------------------------------------------------
+				sample_clinical_attribute
+
+					fields
+
+						_id # migration: one of them is empty, but defaulted to "COMMENT[TARGET DATA LEVEL]"
+						$legacy_pedcbio
+						
+						rdfs:label							# formerly: display_name
+						rdfs:comment			cardi=opt	# only if different than display name; formerly "description"
+
+						is_number				boolean # TODO: as owl union type: real or text
+
+						# discarded:
+						# 	priority: seems to always be '1'
+						#	cancer_study_id (validate)
+
+				# ===========================================================================
+				mutation_core # <=> most important fields from table "mutation_event"
+					fields
+						_id			id
+						$legacy_pedcbio
+
+						chromosome	enum:|MT|NA|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24| # 24?
+						start		integer:[0,1000000000] # TODO: better upper bound + make it dependent on chromosome
+						end
+							type	integer:[0,1000000000]
+							constr	expr: self.end >= self.start # TODO: not enforced yet
+
+						# TODO: use enums
+						# TODO: custom validation for length based on start/end						
+						reference_allele # could do seq enum of A|T|G|C|N|- and so on, but do custom instead
+						tumor_allele
+
+						NCBI_build		enum:|GRCh36|GRCh37|HG19| # TODO enum:<http://ncbi/onto#GenomeBuild>
+						strand			enum:|+|-| # TODO: or just as boolean?
+
+						annotation_data
+							type	nest:annotation_data
+
+						mutation_occurence
+							type	nest:mutation_occurence
+							cardi	seq{1,1000}
+
+				# ---------------------------------------------------------------------------
+				annotation_data # mostly extracted from original table "mutation_event"
+					fields
+						_id			id
+						$legacy_pedcbio
+
+						entrez_gene_id	# TODO: onto
+
+						mutation_type
+							type	enum:|5'Flank|Exon skipping|Frame_Shift_Del|Frame_Shift_Ins|Fusion|In_Frame_Del|In_Frame_Ins|Indel|Missense_Mutation|Nonsense_Mutation|Nonstop_Mutation|Splice_Region|Splice_Site|Splice_Site_SNP|Targeted_Region|Translation_Start_Site|exon14skip|point|truncation|vIII deletion|
+							cardi	opt
+						variant_type
+							type	enum:|Complex_substit|DEL|DNP|G|INS|Indel|NA|ONP|SNP|TNP|
+							cardi	opt
+
+						cosmic_keyword	cardi=opt
+
+						protein_change	# TODO: custom validation
+
+						# TODO: as its own class? => if more
+						functional_impact_value
+							type	real
+
+						functional_impact_score
+							type	enum:|H|L|M|N|
+							cardi	opt
+
+						# TODO: maps
+						#links:     Map[LinkedPortal, String]
+						#oncotator: Map[OncotatorValue, String]
+
+				# ---------------------------------------------------------------------------
+				mutation_occurence # <=> table "mutation"
+					fields
+						_id			id
+						$legacy_pedcbio
+						
+						#event: MutationEventCore,
+						genetic_profile		ref:genetic_profile # TODO: ref or nest?
+			
+						#validate sample & gene ID consistencies:
+
+						# TODO: compare to mutation's
+						# one-to-many?
+						tumor_allele1 # GCTGTGGCTCCAGCTCTGGGGGAA, 0.5%  / 0.25%
+						tumor_allele2 # 0.25% / 0.25%
+			
+						# one-to-many?
+						matched_normal_allele1
+						matched_normal_allele2
+
+						match_normal_validation_allele1
+						match_normal_validation_allele2
+												
+						# one-to-many?
+						matched_normal_sample_barcode # TODO: looks like a concatenation
+
+						center
+							# further cleanup duplicates/homogenize
+							type	enum:|BC|BCCRC|BCM|BGI|CLCGP|COR-L47|Genentech|H1092|H889|HCC33|JHU|LGGM|MSKCC|NUS|RIKEN|Sanger|UTokyo|bcgsc.ca|Broad|discover.nci.nih.gov|genome.wustl.edu|hgsc.bcm.edu|mdanderson.org|nccs|OICR|pfizer_uhongkong|qcmg.uq.edu.au|ucsc.edu|uhongkong|umich.edu|unc.edu|washu.edu|Yale|
+							cardi	seq{0,10}
+
+						mutation_status
+							type	enum:|Somatic|Germline|No matched normal|
+							cardi	opt
+
+						sequencer
+							type	enum:|ABI 3730xl|Illumina|Illumina GAIIx|Illumina HiSeq|Illumina MiSeq|IlluminaGAIIx|Ion Torrent|PacBio|PacBio RS|SOLiD|Sanger|
+							cardi	opt
+						sequencing_phase
+							type	enum:|IONPGM_PCR_WGA|Phase_I|Phase_III|Phase_IV|
+							cardi	opt
+
+						sequence_source
+							type	enum:|Capture|PCR|Sanger|Sanger- GC rich protocol|Sequenom|WGS|WXS|
+							cardi	opt
+
+						validation_method
+							type	enum:|none|454|454_PCR_WGA|Broad|Broad454|Capture|Fluidigm|Fluidigm_realigned|IONPGM_PCR_WGA|Illumina|Illumina Miseq|Illumina_Capture|ManualReview|NBC-454|PGM|PacBio|RNASeq|SOLID|Sanger|Sanger+WG|Sanger_PCR_WGA|Sanger_PCR_gDNA|Sanger_WE|Sequenom|WES|WGS|WU-454|
+							cardi	seq{0,10}
+						validation_status
+							type	enum:|Unknown(Coverage)|SNP|Untested|Valid|High|Moderate|
+							cardi	opt
+
+						verification_status
+							type	enum:|Inconclusive|Somatic|Verified|Wildtype|
+							cardi	opt
+
+						bam_file	cardi=opt # TODO: custom validation
+						score
+							type	boolean
+							cardi	opt
+
+						# TODO: maps
+						#counts: Map[String, Int], // TODO: keep?
+
+
+
+				# ===========================================================================			
+				# ===========================================================================						
+				# ===========================================================================											
+				subject # "subjects"
+					fields
+					
+						_id # ehb_id
+						
+						research_id
+						
+						index
+						
+						created
+						modified
+						
+						organization_code	integer	# "organization"; TODO: as onto along with organization_name
+						organization_name 			# eg "The Children's Hospital of Philadelphia"
+						
+						brp_url # originally "url", eg "https://brp.research.chop.edu/#/dataentry/protocol/2/subject/528"
+						enrollment_type		enum:|None|Prospective|Transfer/Existing (retrospective)|
+				
+						nautilus_subject
+							type	ref:nautilus_subject # ref because also referenced from pedcbio's patient
+							cardi	seq{1,10}
+
+						redcap_study
+							plural	y -> ies
+							type	nest:redcap_study
+							cardi	seq{1,10}
+
+						diagnosis
+							plural	is -> es
+							type	nest:diagnosis
+							cardi	seq
+							
+				# ---------------------------------------------------------------------------
+				nautilus_subject
+					fields
+						_id # sdg_id
+
+						# redundant: ehb_id
+
+						potential_universal_id	# eg "AKASWGQZPC5MAOKC"						
+						sample_subject_id		# eg "7316-100"
+							constr	uniq # TODO: enforce
+							
+						external_reference		# is this always "potential_universal_id:sample_subject_id"?
+							constr	uniq # TODO: enforce
+						
+						collection_site # seems similar to organization_name
+							type	enum:|Unassigned|[null]|CHOP|ETN|LURIE|MEYER|PITT|SEATTLE|
+
+						path_report_available	boolean
+						op_report_available		boolean
+						genomics_available		boolean						
+				
+				# ---------------------------------------------------------------------------				
+				redcap_study # table "redcap_record"
+					plural	y -> ies
+
+					fields
+
+						_id # study_id
+												
+						brp_url # TODO: as url
+						created
+						modified
+
+						label		enum:|Recurrence VI|Recurrence V|Progressive VI|Progressive V|Recurrence IV|Progressive IV|Second Malignancy|Record|Recurrence|Recurrence III|Progressive|Recurrence II|Progressive II|Progressive III|Deceased|Initial CNS Tumor|
+						pds			integer
+							
+						default_subject
+							type	nest:default_subject
+							cardi	seq{1,10} # TODO: confirm 10 is reasonable
+
+				# ---------------------------------------------------------------------------
+				default_subject # "subject"
+					fields
+					
+						_id # "study_id", not a PK proper but UNIQ
+							
+						date_form_completed
+							aliases	dates_form_completed,DateFormCompleted,DatesFormCompleted,dateFormCompleted,datesFormCompleted,"Date Form Completed",dfc
+						general_comment
+
+						gender		enum:|Missing|Unavailable|Female|Male|
+						ethnicity
+							plural	y -> ies
+							type	enum:|Hispanic or Latino|Not Hispanic or Latino|Unavailable/Not Reported|
+
+				# ===========================================================================
+				diagnosis
+					fields
+					
+						_id # "diganosis_id"
+
+						# TODO: has another id called "id"..., eg "5349"
+						
+						age # TODO: was integer in event_free_to_progression...
+
+						path_histology
+							plural	y -> ies
+							cardi	seq
+						
+						# TODO: many more
+
+						portal_subject
+							type	nest:portal_subject
+							cardi	seq{1,10} # TODO: confirm 10 is reasonable
+
+				# ===========================================================================
+				portal_subject # TODO: rename to subject (note: there's another "subject" already)?
+					fields
+					
+						_id # surrogate ID
+
+						research_id
+
+						# ---------------------------------------------------------------------------
+						# nested
+						affected_family_member
+							type	nest:affected_family_member
+							cardi	seq{0,20}
+							
+						event_free_to_progression
+							type	nest:event_free_to_progression
+							cardi	seq
+
+						# ---------------------------------------------------------------------------
+						# flattened
+						current_clinical_status # TODO: one-to-many?
+							plural	us -> uses
+							type	enum:|Not Reported|Unknown, please contact CBTTC|Deceased-due to disease|Alive|Deceased-due to other causes|
+							cardi	seq
+
+						cancer_predisposition_condition # TODO: one-to-many?
+							type	enum:|NF-2|Li-Fraumeni syndrome|Schwannomatosis|NF-1|Tuberous Sclerosis|Other inherited conditions NOS|None documented|
+							cardi	seq
+
+						race	enum:|Native Hawaiian or Other Pacific Islander|Asian|American Indian or Alaska Native|Black or African American|Other/Unavailable/Not Reported|White|
+
+				# ---------------------------------------------------------------------------
+				# TODO: can probably be nested under study instead (check cardinalities)
+				affected_family_member
+					fields
+
+						_id # surrogate ID
+
+						# TODO: as map rather?
+						member					enum:|Unspecified|Other Family Member|Paternal Grandfather|Paternal Grandmother|Maternal Grandfather|Maternal Grandmother|Brother|Sister|Father|Mother|
+						cbttc_cancer_type		enum:|Uterine|Bladder|Prostate|Liver|Bone|Pancreas|Ovarian|Lymphoma|Kidney|Thyroid|Other|Unavailable/Not Specified|Colon|Breast|Skin|Lung|CNS|
+									
+						# discarded:
+						#	cancer_family_concat (redundant)
+												
+				# ---------------------------------------------------------------------------
+				# TODO: can probably be nested under study instead (check cardinalities)
+				event_free_to_progression
+					fields
+					
+						_id # surrogate ID
+											
+						age		integer
+						survival_to_first_progression
+						survival_to_progression
+
+				# ===========================================================================				
+^^^
+

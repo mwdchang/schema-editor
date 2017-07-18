@@ -1,13 +1,25 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Schema Editor</title>
+		<title>Schema Validator</title>
 		<link href="styles.css" rel="stylesheet" type="text/css">
 		<link href="solarized.css" rel="stylesheet" type="text/css">
-		<!--<script src="./node_modules/ace-builds/src-min/ace.js"></script>-->
+		<link href="neb.css" rel="stylesheet" type="text/css">
+
+		<!--
+		<script src="./node_modules/ace-builds/src-min/ace.js"></script>
+		<script src="d3.min.js"></script>
+	-->
+
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js"></script>
 		<script src="https://d3js.org/d3.v4.min.js"></script>
 
+	  <!--
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/mode-css.js"></script>
+   	-->
+
+		<script src="neb-rules.js"></script>
 		<script src="debouncer.js"></script>
 		<script src="validator.js"></script>
 	</head>
@@ -31,11 +43,29 @@
 
 	</body>
 	<script>
+
+	    // Mode
+    	// ace.config.setModuleUrl("ace/mode/neb", "mode-neb.js")
+			// ace.config.set("modePath", "./");
+
 	    let validator = new Validator()
 		  let editor = ace.edit("input")
 			editor.setTheme("ace/theme/solarized_dark")
-			// editor.getSession().setMode("ace/mode/javascript");
 			editor.resize()
+
+			var TextMode = require("ace/mode/text").Mode;
+			var dynamicMode = new TextMode();
+
+			dynamicMode.HighlightRules = require("NebRules").NebRules;
+			editor.session.setMode(dynamicMode);
+
+			editor.getSession().$mode.$highlightRules.setKeywords({
+				"frusciante": "ramparts"
+		  })
+
+
+			// editor.session.bgTokenizer.start(0);
+
 
 
 
@@ -47,7 +77,6 @@
 				  .data(errors)
 					.enter()
 					.append('li')
-					//.text( d => d.txt)
 					.on('click', (d) => {
 						editor.scrollToLine(d.line, true, true, ()=>{})
 						editor.gotoLine(d.line, 0);
@@ -66,7 +95,6 @@
 				}, 2000);
 
 				promiseFn().then( d => {
-					// console.log('promise', d);
 					document.getElementById('output').innerHTML = d.output;
 					if (d.errors) {
 					  displayErrors(d.errors)
@@ -76,7 +104,7 @@
 
 			editor.getSession().on('change', test);
 
-			d3.text('test.txt', (d) => {
+			d3.text('demo.neb', (d) => {
 			  editor.setValue(d, -1)
 			  test()
 			})
