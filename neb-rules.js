@@ -38,6 +38,7 @@ define("NebRules", [], function(require, exports, module) {
 
      this.$rules = {
        "start" : [
+           // this.keywordRule,
            {
              token: 'neb_comment',
              regex: /#.*$/
@@ -52,8 +53,7 @@ define("NebRules", [], function(require, exports, module) {
              // regex : "\\w+",
              // onMatch : function() {return "text"}
              // regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-           },
-           this.keywordRule
+           }
        ]
      };
      this.normalizeRules()

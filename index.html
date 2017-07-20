@@ -20,7 +20,7 @@
 
 		<script src="neb-rules.js"></script>
 		<script src="debouncer.js"></script>
-		<script src="validator.js"></script>
+		<script src="app.js"></script>
 	</head>
 	<body>
 		<div class="row">
@@ -42,70 +42,11 @@
 
 	</body>
 	<script>
+	  const app = new App('input', 'output', 'errors')
+		app.setEditorText('hello world')
 
-	    // Mode
-    	// ace.config.setModuleUrl("ace/mode/neb", "mode-neb.js")
-			// ace.config.set("modePath", "./");
+  	// ace.config.setModuleUrl("ace/mode/neb", "mode-neb.js")
+		// ace.config.set("modePath", "./");
 
-	    let validator = new Validator()
-		  let editor = ace.edit("input")
-			editor.setTheme("ace/theme/solarized_dark")
-			editor.resize()
-
-			var TextMode = require("ace/mode/text").Mode;
-			var dynamicMode = new TextMode();
-
-			dynamicMode.HighlightRules = require("NebRules").NebRules;
-			editor.session.setMode(dynamicMode);
-
-			editor.getSession().$mode.$highlightRules.setKeywords({
-				"frusciante": "ramparts"
-		  })
-
-
-			editor.session.bgTokenizer.start(0);
-
-
-
-
-			let displayErrors = (errors) => {
-				d3.select('#errors').select('*').remove()
-				let container = d3.select('#errors').append('ul');
-
-				let lists = container.selectAll('li')
-				  .data(errors)
-					.enter()
-					.append('li')
-					.on('click', (d) => {
-						editor.scrollToLine(d.line, true, true, ()=>{})
-						editor.gotoLine(d.line, 0);
-					});
-
-				lists.append('span').text(d => d.txt);
-				lists.append('span').style('font-style', 'italic').text(d => d.line);
-			}
-
-			let test = () => {
-				document.getElementById('output').innerHTML = 'validating...';
-				let txt = editor.getSession().getValue();
-
-				let promiseFn = debounce( ()=> {
-					return validator.validate(txt);
-				}, 2000);
-
-				promiseFn().then( d => {
-					document.getElementById('output').innerHTML = d.output;
-					if (d.errors) {
-					  displayErrors(d.errors)
-					}
-				});
-			};
-
-			editor.getSession().on('change', test);
-
-			d3.text('demo.neb', (d) => {
-			  editor.setValue(d, -1)
-			  test()
-			})
 	</script>
 </html>
