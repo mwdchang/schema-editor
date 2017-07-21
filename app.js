@@ -41,7 +41,7 @@ class App {
   setEditorText(txt) {
     this.editor.setValue(txt, -1)
   }
-
+  
   changeHandler() {
     const editor = this.editor
 		const txt = editor.getSession().getValue();
@@ -59,6 +59,11 @@ class App {
   }
 
 
+
+  /**
+   * Request validation
+   * @param {string} txt text to validate
+   */
   validate(txt) {
     return new Promise( (resolve, reject) => {
       let blah = txt
@@ -74,6 +79,10 @@ class App {
   }
 
 
+  /**
+   * Show validation result/expansion
+   * @param {string} txt
+   */
   showResult(txt) {
 		document.getElementById(this.outputId).innerHTML = txt;
   }
