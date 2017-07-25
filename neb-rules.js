@@ -40,6 +40,11 @@ define("NebRules", [], function(require, exports, module) {
        "start" : [
            // this.keywordRule,
            {
+             token: 'neb_lead',
+             regex: '^\\s*\\$?\\w+'
+             // regex: '^\\s*\\w+'
+           },
+           {
              token: 'neb_comment',
              regex: /#.*$/
            },

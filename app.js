@@ -13,20 +13,37 @@ class App {
     this.errorsId = errorsId
 
     this.editor = ace.edit(inputId)
+    this.viewer = ace.edit(outputId)
 
     this.initEditor()
+    this.initViewer();
+  }
+
+  /**
+   * Common initialization for both editor and viewer
+   * @param {object} editor ace editor instance
+   */
+  _initEditor(editor) {
+		let TextMode = require('ace/mode/text').Mode
+    let NebRules = require('NebRules').NebRules
+		let dynamicMode = new TextMode()
+
+		dynamicMode.HighlightRules = NebRules
+
+		editor.setTheme('ace/theme/solarized_dark')
+		editor.resize()
+		editor.session.setMode(dynamicMode)
+  }
+
+  initViewer() {
+    const viewer = this.viewer
+    this._initEditor(viewer)
+    viewer.setReadOnly(true)
   }
 
   initEditor() {
-    const editor = this.editor;
-		editor.setTheme("ace/theme/solarized_dark")
-		editor.resize()
-
-		let TextMode = require("ace/mode/text").Mode
-		let dynamicMode = new TextMode()
-
-		dynamicMode.HighlightRules = require("NebRules").NebRules
-		editor.session.setMode(dynamicMode)
+    const editor = this.editor
+    this._initEditor(editor)
     /*
 		editor.getSession().$mode.$highlightRules.setKeywords({
 			"frusciante": "ramparts"
@@ -41,7 +58,11 @@ class App {
   setEditorText(txt) {
     this.editor.setValue(txt, -1)
   }
-  
+
+  setViewrText(txt) {
+    this.viewer.setValue(txt, -1)
+  }
+
   changeHandler() {
     const editor = this.editor
 		const txt = editor.getSession().getValue();
@@ -68,7 +89,7 @@ class App {
     return new Promise( (resolve, reject) => {
       let blah = txt
       resolve({
-        output: blah.replace(/var/g, 'let'),
+        output: blah.replace(/\t/g, '  ').replace(/\s\s+/, ' '),
         errors: [
           {code:123, line:11, txt: 'this is an error'},
           {code:123, line:24, txt: 'this is an error'},
@@ -84,7 +105,7 @@ class App {
    * @param {string} txt
    */
   showResult(txt) {
-		document.getElementById(this.outputId).innerHTML = txt;
+    this.setViewrText(txt);
   }
 
   /**

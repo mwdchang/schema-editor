@@ -5,7 +5,7 @@
   justify-content: space-between;
 }
 
-#input {
+#input, #output {
   top: 0.25rem;
   bottom: 0.25rem;
   right: 0.25rem;
@@ -15,12 +15,9 @@
 }
 
 #output {
-  margin: 0;
-  padding: 0;
-  padding-left: 0.25rem;
-  height: 100%;
-  overflow: scroll;
+  border-left: 1px solid #888;
 }
+
 
 #errors {
   width: 100%;
